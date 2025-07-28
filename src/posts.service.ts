@@ -17,7 +17,7 @@ export class PostsService {
   private posts: Post[] = [];
   private lastPostId = 1;
 
-  create(post: Omit<Post, 'id' | 'date'>) {
+  create(post: Omit<Post, 'id'>) {
     const postWithId: Post = {
       ...post,
       id: this.lastPostId.toString(),
@@ -33,14 +33,15 @@ export class PostsService {
   findMany({ skip, limit }: FindManyOptions = {}) {
     let foundPosts = this.posts;
 
-    // Stryker disable next-line ConditionalExpression: The "true" mutant results in an equivalent mutant
-    if (skip !== undefined) {
-      foundPosts = foundPosts.slice(skip);
+    const safeSkip = skip !== undefined && skip >= 0 ? skip : 0;
+    const safeLimit = limit !== undefined && limit >= 0 ? limit : undefined;
+
+    if (safeSkip > 0) {
+      foundPosts = foundPosts.slice(safeSkip);
     }
 
-    // Stryker disable next-line ConditionalExpression: The "true" mutant results in an equivalent mutant
-    if (limit !== undefined) {
-      foundPosts = foundPosts.slice(0, limit);
+    if (safeLimit !== undefined) {
+      foundPosts = foundPosts.slice(0, safeLimit);
     }
 
     return foundPosts;
